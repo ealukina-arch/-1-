@@ -1,0 +1,43 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="Django" />
+          <option value="django-filter" />
+          <option value="django-allauth" />
+          <option value="pyjwt" />
+          <option value="cryptography" />
+          <option value="amqp" />
+          <option value="APScheduler" />
+          <option value="asgiref" />
+          <option value="billiard" />
+          <option value="celery" />
+          <option value="certifi" />
+          <option value="charset-normalizer" />
+          <option value="click" />
+          <option value="click-didyoumean" />
+          <option value="click-plugins" />
+          <option value="click-repl" />
+          <option value="colorama" />
+          <option value="idna" />
+          <option value="kombu" />
+          <option value="package_name" />
+          <option value="packaging" />
+          <option value="prompt_toolkit" />
+          <option value="python-dateutil" />
+          <option value="redis" />
+          <option value="requests" />
+          <option value="six" />
+          <option value="sqlparse" />
+          <option value="tzdata" />
+          <option value="tzlocal" />
+          <option value="urllib3" />
+          <option value="vine" />
+          <option value="wcwidth" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
