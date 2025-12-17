@@ -60,7 +60,7 @@ async def submit_data(data: SubmitPassData) -> SubmitPassResponse:
         # Преобразуем объект Pydantic в словарь
         pass_data = data.model_dump()
 
-        # Создаём объект класса Database
+        # Создаём объект класса Database для работы с PostgreSQL
         db = Database()
 
         # Вызываем метод для добавления данных в БД
@@ -78,7 +78,7 @@ async def submit_data(data: SubmitPassData) -> SubmitPassResponse:
         logger.error(f"Ошибка в методе submit_data: {e}")
         return SubmitPassResponse(
             status=500,
-            message="Ошибка при обработке запроса",
+            message="Внутренняя ошибка сервера при обработке запроса",
             id=None
         )
 
