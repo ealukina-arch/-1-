@@ -7,6 +7,7 @@ REST API для системы управления перевалами.
 """
 
 import os
+import logging
 from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
@@ -15,6 +16,10 @@ from app.database import Database
 
 # Загружаем переменные окружения из файла .env
 load_dotenv()
+
+# Настраиваем логирование (один раз на всё приложение)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Создаём приложение FastAPI
 app = FastAPI(
@@ -26,8 +31,14 @@ app = FastAPI(
 
 # ============== ГЛАВНЫЙ МЕТОД REST API ==============
 
-@app.post("/submitData", response_model=SubmitPassResponse)
+@app.post(
+    "/submitData",
+    response_model=SubmitPassResponse,
+    summary="Добавить информацию о перевале",
+    tags=["Passes"]
+)
 async def submit_data(data: SubmitPassData) -> SubmitPassResponse:
+
     """
     Метод для отправки информации о новом перевале.
 
@@ -64,7 +75,7 @@ async def submit_data(data: SubmitPassData) -> SubmitPassResponse:
 
     except Exception as e:
         # Если случилась непредвиденная ошибка
-        print(f"Ошибка в методе submit_data: {e}")
+        logger.error(f"Ошибка в методе submit_data: {e}")
         return SubmitPassResponse(
             status=500,
             message="Ошибка при обработке запроса",

@@ -5,10 +5,15 @@
 
 import os
 import base64
+import logging
 from datetime import datetime
 from typing import Optional, Dict, Any
 import psycopg2
 from psycopg2.extras import RealDictCursor
+
+logger = logging.getLogger(__name__)
+
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 мегабайт
 
 
 class Database:
@@ -50,7 +55,7 @@ class Database:
             )
             return True
         except psycopg2.Error as e:
-            print(f"Ошибка подключения к БД: {e}")
+            logger.error(f"Ошибка подключения к БД: {e}")
             return False
 
     def disconnect(self):
@@ -76,7 +81,7 @@ class Database:
             cursor.close()
             return True
         except psycopg2.Error as e:
-            print(f"Ошибка выполнения запроса: {e}")
+            logger.error(f"Ошибка выполнения запроса: {e}")
             self.connection.rollback()
             return False
 
@@ -98,7 +103,7 @@ class Database:
             cursor.close()
             return result
         except psycopg2.Error as e:
-            print(f"Ошибка при получении данных: {e}")
+            logger.error(f"Ошибка при получении данных: {e}")
             return None
 
     def fetch_all(self, query: str, params: tuple = None) -> list:
@@ -119,7 +124,7 @@ class Database:
             cursor.close()
             return result if result else []
         except psycopg2.Error as e:
-            print(f"Ошибка при получении данных: {e}")
+            logger.error(f"Ошибка при получении данных: {e}")
             return []
 
     def get_last_insert_id(self) -> Optional[int]:
@@ -136,7 +141,7 @@ class Database:
             cursor.close()
             return result[0] if result else None
         except psycopg2.Error as e:
-            print(f"Ошибка при получении ID: {e}")
+            logger.error(f"Ошибка при получении ID: {e}")
             return None
 
     def create_user(self, email: str, phone: str, fam: str, name: str, otc: str) -> Optional[int]:
@@ -175,7 +180,7 @@ class Database:
             cursor.close()
             return result[0] if result else None
         except psycopg2.Error as e:
-            print(f"Ошибка при создании пользователя: {e}")
+            logger.error(f"Ошибка при создании пользователя: {e}")
             self.connection.rollback()
             return None
 
@@ -215,7 +220,7 @@ class Database:
             cursor.close()
             return pass_id
         except psycopg2.Error as e:
-            print(f"Ошибка при создании перевала: {e}")
+            logger.error(f"Ошибка при создании перевала: {e}")
             self.connection.rollback()
             return None
 
@@ -260,7 +265,7 @@ class Database:
 
         return self.execute_query(query, (pass_id, title, image_data))
 
-    def submit_pass_data(self, pass_data: Dict[str, Any]) -> tuple[int, Optional[str], Optional[int]]:
+    def submit_pass_data(self, pass_data: Dict[str, Any]) -> Tuple[int, Optional[str], Optional[int]]:
         """
         Главный метод для добавления информации о перевале в БД.
         Это метод вызывается из REST API.
@@ -339,15 +344,22 @@ class Database:
                 # Декодируем Base64 данные
                 try:
                     image_bytes = base64.b64decode(image_data)
+
+                    # проверяем размер
+                    if len(image_bytes) > MAX_IMAGE_SIZE:
+                        logger.warning(f"Изображение '{image_title}' слишком большое, пропускаем")
+                        continue
+
                     self.create_image(pass_id, image_title, image_bytes)
+
                 except Exception as e:
-                    print(f"Ошибка при обработке изображения: {e}")
-                    # Продолжаем, даже если одна фото не загрузилась
+                    logger.error(f"Ошибка при обработке изображения '{image_title}': {e}")
+                    # продолжаем, даже если одно фото не загрузилось
 
             return 200, None, pass_id
 
         except Exception as e:
-            print(f"Неожиданная ошибка: {e}")
+            logger.error(f"Неожиданная ошибка: {e}")
             return 500, "Ошибка при обработке данных", None
 
         finally:
